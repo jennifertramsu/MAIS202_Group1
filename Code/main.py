@@ -6,25 +6,47 @@
 # Input : Single channel representation of greyscale image
 # Output : Two/three channel representation of colourized image
 #
+# References : 
+# @Article{MaskedAutoencoders2021,
+#   author  = {Kaiming He and Xinlei Chen and Saining Xie and Yanghao Li and Piotr Doll{\'a}r and Ross Girshick},
+#   journal = {arXiv:2111.06377},
+#   title   = {Masked Autoencoders Are Scalable Vision Learners},
+#   year    = {2021},
+# }
 # ----------------------------------------------------------------------------------------------
 
 # File Handling
 import glob
 
-# Data Manipulation
+# Manipulation
 import numpy as np
+from PIL import Image
 import matplotlib.pyplot as plt
-from PIL import Image 
+import requests
+
+# Helpers
+from visualize import show_image
 
 # Models
-#from transformers import AutoFeatureExtractor, AutoModelForImageClassification
-from transformers import AutoFeatureExtractor, ViTMAEConfig, ViTMAEModel
+from transformers import ViTMAEForPreTraining, ViTFeatureExtractor
+import torch
 
-#extractor = AutoFeatureExtractor.from_pretrained("google/vit-base-patch16-224")
-#model = AutoModelForImageClassification.from_pretrained("google/vit-base-patch16-224")
+# ----------------------------------------------------------------------------------------------
 
-config = ViTMAEConfig()
-model = ViTMAEModel(config)
+## Scripts / Functions Required
+
+# 1 ) Preprocessing Code
+# --> Images are converted to BW, resized to 224 x 224 pixels
+# --> Trying both LAB and RGB colour spaces
+# --> Data split into training and test sets
+
+# 2 ) Training the Model
+# --> Training inside loop, save loss at end of each iteration
+# --> need training and loss function
+
+# 3 ) Main Body
+# --> This is where everything is put together
+# --> Initializing hyperparameters, weights
 
 # ----------------------------------------------------------------------------------------------
 # Train Test Split
@@ -47,20 +69,28 @@ l_test = ls[20000:, :, :]
 
 # ----------------------------------------------------------------------------------------------
 
-plt.imshow(l_test[0], cmap='gray')
-plt.show()
+# Training from Scratch
+# Can split greyscale into three identical channels
 
-## Scripts / Functions Required
+# ----------------------------------------------------------------------------------------------
+# Building Model
 
-# 1 ) Preprocessing Code
-# --> Images are converted to BW, resized to 224 x 224 pixels
-# --> Trying both LAB and RGB colour spaces
-# --> Data split into training and test sets
+feature_extractor = ViTFeatureExtractor.from_pretrained("facebook/vit-mae-base")
+model = ViTMAEForPreTraining.from_pretrained("facebook/vit-mae-base")
 
-# 2 ) Training the Model
-# --> Training inside loop, save loss at end of each iteration
-# --> need training and loss function
+imagenet_mean = np.array(feature_extractor.image_mean)
+imagenet_std = np.array(feature_extractor.image_std)
 
-# 3 ) Main Body
-# --> This is where everything is put together
-# --> Initializing hyperparameters, weights
+# Testing Print
+
+url = "http://images.cocodataset.org/val2017/000000039769.jpg"
+image = Image.open(requests.get(url, stream=True).raw)
+
+inputs = feature_extractor(images=image, return_tensors="pt")
+outputs = model(**inputs)
+
+y = model.unpatchify(outputs.logits)
+y = torch.einsum('nchw->nhwc', y).detach().cpu()
+
+plt.figure(1)
+show_image(y[0], imagenet_mean, imagenet_std, title="Testing Visualization")
