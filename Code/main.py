@@ -28,7 +28,7 @@ import requests
 from visualize import show_image
 
 # Models
-from transformers import ViTMAEForPreTraining, ViTFeatureExtractor
+from transformers import ViTMAEForPreTraining, ViTFeatureExtractor, ViTModel
 import torch
 
 # ----------------------------------------------------------------------------------------------
@@ -78,19 +78,32 @@ l_test = ls[20000:, :, :]
 feature_extractor = ViTFeatureExtractor.from_pretrained("facebook/vit-mae-base")
 model = ViTMAEForPreTraining.from_pretrained("facebook/vit-mae-base")
 
+# ViTModel itself doesn't have unpatchify method, which is needed to visualize output
+#feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
+#model = ViTModel.from_pretrained("google/vit-base-patch16-224-in21k")
+
 imagenet_mean = np.array(feature_extractor.image_mean)
 imagenet_std = np.array(feature_extractor.image_std)
 
 # Testing Print
 
-url = "http://images.cocodataset.org/val2017/000000039769.jpg"
-image = Image.open(requests.get(url, stream=True).raw)
+#url = "http://images.cocodataset.org/val2017/000000039769.jpg"
+#image = Image.open(requests.get(url, stream=True).raw)
 
-inputs = feature_extractor(images=image, return_tensors="pt")
+#inputs = feature_extractor(images=image, return_tensors="pt")
+
+t = np.stack((l_train[0],)*3, axis=-1)
+
+b = Image.fromarray(t)
+
+inputs = feature_extractor(images=t, return_tensors="pt")
+
 outputs = model(**inputs)
 
 y = model.unpatchify(outputs.logits)
-y = torch.einsum('nchw->nhwc', y).detach().cpu()
+y = torch.einsum('nchw->nhwc', y).detach().cpu() # Einstein summation
 
 plt.figure(1)
 show_image(y[0], imagenet_mean, imagenet_std, title="Testing Visualization")
+
+plt.show()

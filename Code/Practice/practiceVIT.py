@@ -28,14 +28,12 @@ outputs = model(**inputs)
 y = model.unpatchify(outputs.logits)
 y = torch.einsum('nchw->nhwc', y).detach().cpu()
 
-plt.subplot(1, 2, 1)
-show_image(y[0], "reconstruction")
+#plt.subplot(1, 2, 1)
+#show_image(y[0], "reconstruction")
 
-plt.show()
+#plt.show()
 
+x = np.array([[2, 0, 0], [0, 1, 0], [0, 0, 3]])
+t = torch.from_numpy(x)
 
-
-# save logits to array??
-
-
-
+print(torch.einsum('i,j,k->j,i,k', t))
