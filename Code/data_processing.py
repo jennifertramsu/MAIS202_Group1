@@ -52,3 +52,22 @@ np.save("lab_X_valid.npy", lab_X_valid)
 np.save("lab_y_train.npy", lab_y_train)
 np.save("lab_y_test.npy", lab_y_test)
 np.save("lab_y_valid.npy", lab_y_valid)
+
+from PIL import Image
+
+def grey2three(arr):
+    '''
+    Parameters
+    ----------
+    arr : NumPy Array
+
+    Returns
+    -------
+    img : Image object
+    '''
+
+    channel = np.stack((arr,)*3, axis=-1)
+
+    img = Image.fromarray(channel)
+
+    return img

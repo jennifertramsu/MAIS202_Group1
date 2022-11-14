@@ -23,6 +23,7 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 import requests
+from data_processing import grey2three
 
 # Helpers
 from visualize import show_image
@@ -49,7 +50,7 @@ import torch
 # --> Initializing hyperparameters, weights
 
 # ----------------------------------------------------------------------------------------------
-# Train Test Split
+# Train Test Split - Update with new data
 
 path = 'Datasets'
 ab = path + '/ab/*'
@@ -68,35 +69,17 @@ l_train = ls[:20000, :, :]
 l_test = ls[20000:, :, :]
 
 # ----------------------------------------------------------------------------------------------
-
-# Training from Scratch
-# Can split greyscale into three identical channels
-
-# ----------------------------------------------------------------------------------------------
 # Building Model
 
 feature_extractor = ViTFeatureExtractor.from_pretrained("facebook/vit-mae-base")
 model = ViTMAEForPreTraining.from_pretrained("facebook/vit-mae-base")
 
-# ViTModel itself doesn't have unpatchify method, which is needed to visualize output
-#feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
-#model = ViTModel.from_pretrained("google/vit-base-patch16-224-in21k")
-
 imagenet_mean = np.array(feature_extractor.image_mean)
 imagenet_std = np.array(feature_extractor.image_std)
 
-# Testing Print
+b = grey2three(l_train[0])
 
-#url = "http://images.cocodataset.org/val2017/000000039769.jpg"
-#image = Image.open(requests.get(url, stream=True).raw)
-
-#inputs = feature_extractor(images=image, return_tensors="pt")
-
-t = np.stack((l_train[0],)*3, axis=-1)
-
-b = Image.fromarray(t)
-
-inputs = feature_extractor(images=t, return_tensors="pt")
+inputs = feature_extractor(images=b, return_tensors="pt")
 
 outputs = model(**inputs)
 
@@ -107,3 +90,10 @@ plt.figure(1)
 show_image(y[0], imagenet_mean, imagenet_std, title="Testing Visualization")
 
 plt.show()
+
+# ----------------------------------------------------------------------------------------------
+# Archive 
+
+# ViTModel itself doesn't have unpatchify method, which is needed to visualize output
+#feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
+#model = ViTModel.from_pretrained("google/vit-base-patch16-224-in21k")
