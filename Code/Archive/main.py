@@ -29,25 +29,9 @@ from data_processing import grey2three
 from visualize import show_image
 
 # Models
-from transformers import ViTMAEForPreTraining, ViTFeatureExtractor, ViTModel
+from transformers import ViTMAEForPreTraining, ViTFeatureExtractor, Trainer, TrainingArguments
 import torch
-
-# ----------------------------------------------------------------------------------------------
-
-## Scripts / Functions Required
-
-# 1 ) Preprocessing Code
-# --> Images are converted to BW, resized to 224 x 224 pixels
-# --> Trying both LAB and RGB colour spaces
-# --> Data split into training and test sets
-
-# 2 ) Training the Model
-# --> Training inside loop, save loss at end of each iteration
-# --> need training and loss function
-
-# 3 ) Main Body
-# --> This is where everything is put together
-# --> Initializing hyperparameters, weights
+from torch.utils.data import DataLoader
 
 # ----------------------------------------------------------------------------------------------
 # Train Test Split - Update with new data
@@ -68,28 +52,38 @@ ab_test = abs[2]
 l_train = ls[:20000, :, :]
 l_test = ls[20000:, :, :]
 
+l_train_3 = [grey2three(i) for i in l_train]
+
+print(l_train_3)
+
+t = np.append()
+
 # ----------------------------------------------------------------------------------------------
-# Building Model
+# Training Model
 
 feature_extractor = ViTFeatureExtractor.from_pretrained("facebook/vit-mae-base")
 model = ViTMAEForPreTraining.from_pretrained("facebook/vit-mae-base")
 
-imagenet_mean = np.array(feature_extractor.image_mean)
-imagenet_std = np.array(feature_extractor.image_std)
+training_args = TrainingArguments(output_dir="test_trainer", evaluation_strategy='epoch')
 
-b = grey2three(l_train[0])
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 
-inputs = feature_extractor(images=b, return_tensors="pt")
+def compute_metrics(ref, pref, sample_weight=None, multioutput="uniform average", squared=True):
 
-outputs = model(**inputs)
+    score_mse = mean_squared_error(ref, prod, sample_weight, multioutput, squared)
+    score_mae = mean_absolute_error(ref, pred, sample_weight, multioutput)
 
-y = model.unpatchify(outputs.logits)
-y = torch.einsum('nchw->nhwc', y).detach().cpu() # Einstein summation
+    return {"mae": score_mae, 'mse': score_mse}
 
-plt.figure(1)
-show_image(y[0], imagenet_mean, imagenet_std, title="Testing Visualization")
+trainer = Trainer(
+    model = model,
+    args = training_args,
+    train_dataset = l_train_dataset,
+    eval_dataset = l_test_dataset,
+    compute_metrics = compute_metrics
+)
 
-plt.show()
+#trainer.train()
 
 # ----------------------------------------------------------------------------------------------
 # Archive 
