@@ -31,7 +31,7 @@ Our dataset consisted of 30K 224x224 pixel images from ![Kaggle](https://www.kag
 
 <h2> Final Reflection </h2>
 
-The model did not perform very well! :D
+The model did not perform very well! :D Several improvements can be made. The main goal moving forward is to finetune a pre-trained model as opposed to training a model from scratch. Other improvements include proper handling when dealing with images in Python.
 
 <h2> References </h2>
 
