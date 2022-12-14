@@ -38,3 +38,11 @@ The model did not perform very well! :D Several improvements can be made. The ma
 - https://algoritmaonline.com/image-colorization/
 - https://xiangyutang2.github.io/auto-colorization-autoencoders/
 - https://medium.com/@navmcgill/k-fold-cross-validation-in-keras-convolutional-neural-networks-835bed559d04
+
+<h2>Post-Bootcamp To-Dp:</h2>
+
+- Reorganize repo
+- Develop proper script to handle incoming images
+- Search for more appropriate dataset (consistent image set?)
+- Finetune a pre-trained model
+- Develop a platform to interact with model
