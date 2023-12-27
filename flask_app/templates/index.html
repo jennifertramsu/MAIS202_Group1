@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{% block title %} CNN Colourizer {% endblock %}</h1>
+
+<h2>Upload a black and white image to colourize</h2>
+<form action = "" method = "post" enctype="multipart/form-data">
+    <input type = "file" name = "file" />
+    <input type = "submit"/>
+</form>
+<p>{{msg}}</p>
+
+{% endblock %}
